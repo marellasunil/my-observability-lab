@@ -1,0 +1,22 @@
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*secret*.yaml
+*secret*.yml
+kubeconfig
+admin.conf
+secrets/
+credentials/
+
+# Runtime and backups
+backups/
+data/
+*.db
+*.sqlite
+*.log

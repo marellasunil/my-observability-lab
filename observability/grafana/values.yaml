@@ -1,0 +1,51 @@
+replicas: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistence:
+  enabled: true
+  type: pvc
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: observability
+    provider:
+      allowUiUpdates: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+grafana.ini:
+  server:
+    root_url: http://fedora-worker:30080/
+  users:
+    allow_sign_up: false
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-stack-kube-prom-prometheus.observability.svc.cluster.local:9090
+        isDefault: true
+        editable: false

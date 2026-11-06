@@ -81,5 +81,12 @@ helm upgrade --install grafana \
   --wait \
   --timeout 10m
 
+echo "Deploying Grafana NodePort service..."
+
+kubectl apply -f \
+  "$ROOT_DIR/observability/grafana/grafana-nodeport.yaml"
+
 echo "Monitoring installation complete."
+
 kubectl get pods -n "$NAMESPACE"
+kubectl get svc grafana-nodeport -n "$NAMESPACE"

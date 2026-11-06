@@ -1,72 +1,28 @@
 #!/usr/bin/env bash
-set -euo pipefail
-
-MODE="${1:---dry-run}"
-TARGET_VERSION="2.4.2"
-
-if [[ "$MODE" != "--dry-run" && "$MODE" != "--apply" ]]; then
-  echo "Usage: $0 [--dry-run|--apply]"
-  exit 1
+source "$(dirname "$0")/common.sh" "$@"
+show_mode
+[[ -f /etc/fedora-release ]] || { log 'Fedora required'; exit 1; }
+if command -v containerd >/dev/null; then log "Installed: $(containerd --version)"; else log 'Not installed'; fi
+if [[ $MODE == --dry-run ]]; then
+  log "Would install containerd ${CONTAINERD_VERSION}, configure SystemdCgroup and enable service on a fresh node"
+  exit 0
 fi
-
-if [[ ! -f /etc/fedora-release ]]; then
-  echo "ERROR: This installer supports Fedora only."
-  exit 1
-fi
-
-echo "====================================="
-echo " Observability Lab - Containerd"
-echo "====================================="
-
-echo "Target version: $TARGET_VERSION"
-echo "Mode: $MODE"
-
-if command -v containerd >/dev/null 2>&1; then
-  echo "Existing: $(containerd --version)"
+require_root; assert_fresh_node
+[[ ! -e /etc/containerd/config.toml ]] || { log 'Existing config.toml detected: refusing overwrite'; exit 1; }
+# Do not change an existing runtime on a fresh-looking machine.
+if command -v containerd >/dev/null; then
+  version="$(containerd --version | sed -nE 's/.* v([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')"
+  [[ "$version" == "$CONTAINERD_VERSION" ]] || { log "Version mismatch: $version != $CONTAINERD_VERSION"; exit 1; }
 else
-  echo "Containerd is not installed."
+  log 'Installing containerd from configured Fedora repositories'
+  dnf install -y containerd
+  version="$(containerd --version | sed -nE 's/.* v([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')"
+  [[ "$version" == "$CONTAINERD_VERSION" ]] || { log "Installed version $version differs from pinned $CONTAINERD_VERSION; stopping"; exit 1; }
 fi
-
-if [[ -f /etc/kubernetes/admin.conf ]] ||
-   [[ -f /etc/kubernetes/kubelet.conf ]]; then
-  echo "Existing Kubernetes configuration detected."
-  echo "Containerd installation/configuration changes are blocked."
-  exit 0
-fi
-
-if [[ "$MODE" == "--dry-run" ]]; then
-  echo "Dry-run complete. No changes made."
-  exit 0
-fi
-
-if [[ "$EUID" -ne 0 ]]; then
-  echo "ERROR: --apply requires sudo."
-  exit 1
-fi
-
-dnf install -y containerd
-
-INSTALLED_VERSION="$(containerd --version | awk '{print $3}' | sed 's/^v//')"
-
-if [[ "$INSTALLED_VERSION" != "$TARGET_VERSION" ]]; then
-  echo "ERROR: Installed version $INSTALLED_VERSION differs from $TARGET_VERSION."
-  echo "Stopping before changing configuration."
-  exit 1
-fi
-
 mkdir -p /etc/containerd
-
-if [[ -e /etc/containerd/config.toml ]]; then
-  echo "Existing containerd config detected. Refusing to overwrite."
-  exit 1
-fi
-
-containerd config default > /etc/containerd/config.toml
-
-# Configure systemd cgroups for runc.
-sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' \
-  /etc/containerd/config.toml
-
+containerd config default >/etc/containerd/config.toml
+# Fail if default format changes, rather than silently leaving cgroups wrong.
+grep -q 'SystemdCgroup = false' /etc/containerd/config.toml || { log 'Unexpected containerd config format'; exit 1; }
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
 systemctl enable --now containerd
-
-echo "Containerd installed and started."
+log 'Containerd installed and configured'

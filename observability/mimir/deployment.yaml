@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mimir-data
+  namespace: observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir
+  namespace: observability
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mimir
+  template:
+    metadata:
+      labels:
+        app: mimir
+    spec:
+      containers:
+        - name: mimir
+          image: grafana/mimir:3.0.0
+          args:
+            - -target=all
+            - -config.file=/etc/mimir/mimir.yaml
+          ports:
+            - name: http
+              containerPort: 9009
+            - name: grpc
+              containerPort: 9095
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mimir
+              readOnly: true
+            - name: data
+              mountPath: /data/mimir
+      volumes:
+        - name: config
+          configMap:
+            name: mimir-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: mimir-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir
+  namespace: observability
+spec:
+  type: ClusterIP
+  selector:
+    app: mimir
+  ports:
+    - name: http
+      port: 9009
+      targetPort: http

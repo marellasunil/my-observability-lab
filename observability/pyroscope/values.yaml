@@ -1,0 +1,40 @@
+
+pyroscope:
+  replicaCount: 1
+  disableSelfProfile: true
+
+  extraArgs:
+    log.level: info
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+
+# We will configure profiling collection separately.
+alloy:
+  enabled: false
+
+agent:
+  enabled: false
+
+# No external object storage for this lab.
+minio:
+  enabled: false
+
+# Allow Prometheus Operator to scrape Pyroscope.
+serviceMonitor:
+  enabled: true
+  labels:
+    release: prometheus-stack
+  interval: 30s
+

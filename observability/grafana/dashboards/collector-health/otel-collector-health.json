@@ -1,0 +1,761 @@
+{
+  "uid": "otel-collector-health",
+  "title": "OpenTelemetry | Agent & Gateway Health",
+  "description": "Collector internal health and configured telemetry path for Fedora homelab",
+  "tags": [
+    "opentelemetry",
+    "collector",
+    "agent",
+    "gateway",
+    "homelab"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Collector targets UP",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "1 means Prometheus successfully scraped the collector; 0 means scrape failure.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{namespace=\"observability\",endpoint=\"self-metrics\"}",
+          "legendFormat": "{{job}} / {{instance}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 5
+      }
+    },
+    {
+      "id": 2,
+      "title": "Collector uptime",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "otelcol_process_uptime{namespace=\"observability\",endpoint=\"self-metrics\"}",
+          "legendFormat": "{{job}} / {{instance}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 5
+      }
+    },
+    {
+      "id": 3,
+      "title": "Accepted metric points / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,receiver) (rate(otelcol_receiver_accepted_metric_points{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{receiver}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 4,
+      "title": "Refused metric points / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,receiver) (rate(otelcol_receiver_refused_metric_points{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{receiver}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 5,
+      "title": "Receiver failed metric points / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,receiver) (rate(otelcol_receiver_failed_metric_points{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{receiver}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 6,
+      "title": "Processor incoming items / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,processor) (rate(otelcol_processor_incoming_items{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{processor}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 7,
+      "title": "Processor outgoing items / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,processor) (rate(otelcol_processor_outgoing_items{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{processor}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 8,
+      "title": "Batch send size (average)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job) (rate(otelcol_processor_batch_batch_send_size_sum{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval])) / clamp_min(sum by (job) (rate(otelcol_processor_batch_batch_send_size_count{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval])), 0.000001)",
+          "legendFormat": "{{job}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 23,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 9,
+      "title": "Collector heap allocated",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "otelcol_process_runtime_heap_alloc_bytes{namespace=\"observability\",endpoint=\"self-metrics\"}",
+          "legendFormat": "{{job}} \u00b7 {{instance}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 10,
+      "title": "Collector runtime total system memory",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "otelcol_process_runtime_total_sys_memory_bytes{namespace=\"observability\",endpoint=\"self-metrics\"}",
+          "legendFormat": "{{job}} \u00b7 {{instance}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 11,
+      "title": "Exporter sent metric points / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Available only if this exporter metric is exposed by the Collector build.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,exporter) (rate(otelcol_exporter_sent_metric_points{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 12,
+      "title": "Exporter queue utilization (%)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Queue utilization per exporter; no failure counter is currently confirmed.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * otelcol_exporter_queue_size{namespace=\"observability\",endpoint=\"self-metrics\"} / clamp_min(otelcol_exporter_queue_capacity{namespace=\"observability\",endpoint=\"self-metrics\"}, 1)",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 41,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 13,
+      "title": "Exporter queue size",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "If not emitted, inspect otelcol_exporter_enqueue_size_* metrics for this Collector version.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,exporter) (otelcol_exporter_queue_size{namespace=\"observability\",endpoint=\"self-metrics\"})",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 14,
+      "title": "Exporter queue capacity",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Only shown if available.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,exporter) (otelcol_exporter_queue_capacity{namespace=\"observability\",endpoint=\"self-metrics\"})",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 50,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 99,
+      "type": "text",
+      "title": "Configured telemetry flow (not auto-discovered)",
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 24,
+        "h": 7
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Fedora host \u2192 Agent \u2192 Gateway \u2192 destinations\n\n`fedora-worker` \u2192 **otel-hostmetrics-agent** (hostmetrics receiver, 30s) \u2192 **OTLP/gRPC :4317** \u2192 **otel-gateway** (OTLP receiver / memory limiter / transform / batch) \u2192 **Prometheus** (scrapes Gateway exporter `:8889`) **and** **Mimir** (Prometheus remote write `/api/v1/push`).\n\n**Self-monitoring (separate path):** Prometheus scrapes Agent and Gateway `:8888`. This topology describes the deployed configuration; rates and scrape health do **not** prove backend ingestion or trace an individual metric end to end.\n\n**Troubleshooting:** If an exporter panel shows \u201cNo data,\u201d check which `otelcol_exporter_*` metric names your Collector exposes before modifying the query."
+      }
+    },
+    {
+      "id": 100,
+      "title": "Exporter in-flight requests",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "If not emitted, inspect otelcol_exporter_enqueue_size_* metrics for this Collector version.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "otelcol_exporter_in_flight_requests{namespace=\"observability\",endpoint=\"self-metrics\"}",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 59,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "id": 101,
+      "title": "Mimir remote-write batches / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "If not emitted, inspect otelcol_exporter_enqueue_size_* metrics for this Collector version.",
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (job,exporter) (rate(otelcol_exporter_prometheusremotewrite_sent_batches{namespace=\"observability\",endpoint=\"self-metrics\"}[$__rate_interval]))",
+          "legendFormat": "{{job}} \u00b7 {{exporter}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 59,
+        "w": 12,
+        "h": 9
+      }
+    }
+  ],
+  "annotations": {
+    "list": []
+  }
+}

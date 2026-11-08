@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-gateway
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-gateway
+  template:
+    metadata:
+      labels:
+        app: otel-gateway
+    spec:
+      containers:
+        - name: otel-gateway
+          image: otel/opentelemetry-collector-contrib:0.164.0
+          args:
+            - --config=/etc/otelcol/config.yaml
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+            - name: prometheus
+              containerPort: 8889
+            - containerPort: 8888
+              name: self-metrics
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: otel-gateway-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-gateway
+  namespace: observability
+  labels:
+    app: otel-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: otel-gateway
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: otlp-grpc
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+    - name: prometheus
+      port: 8889
+      targetPort: prometheus
+    - name: self-metrics
+      port: 8888
+      targetPort: self-metrics
+      protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-gateway
+  namespace: observability
+  labels:
+    release: prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: otel-gateway
+  namespaceSelector:
+    matchNames:
+      - observability
+  endpoints:
+    - port: prometheus
+      path: /metrics
+      interval: 30s
+    - port: self-metrics
+      path: /metrics
+      interval: 30s

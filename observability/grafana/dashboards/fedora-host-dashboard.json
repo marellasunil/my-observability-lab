@@ -9,7 +9,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "30s",
   "time": {
     "from": "now-1h",
@@ -33,7 +33,7 @@
         "refresh": 2,
         "includeAll": true,
         "allValue": ".*",
-        "multi": false,
+        "multi": true,
         "sort": 1,
         "current": {
           "selected": true,
@@ -58,7 +58,57 @@
         "refresh": 2,
         "includeAll": true,
         "allValue": ".*",
-        "multi": false,
+        "multi": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "regex": ""
+      },
+      {
+        "name": "device",
+        "label": "Disk device",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(system_disk_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}, device)",
+        "query": {
+          "query": "label_values(system_disk_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}, device)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "regex": ""
+      },
+      {
+        "name": "mountpoint",
+        "label": "Mount point",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(system_filesystem_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}, mountpoint)",
+        "query": {
+          "query": "label_values(system_filesystem_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}, mountpoint)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
         "sort": 1,
         "current": {
           "selected": true,
@@ -93,15 +143,17 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "100 * (1 - system_cpu_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\",state=\"idle\"})",
-          "legendFormat": "",
+          "expr": "100 * (1 - avg by (host_name) (system_cpu_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\",state=\"idle\"}))",
+          "legendFormat": "{{host_name}}",
           "refId": "A",
           "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent"
+          "unit": "percent",
+          "min": 0,
+          "max": 100
         },
         "overrides": []
       },
@@ -114,9 +166,10 @@
           "values": false
         },
         "orientation": "auto",
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "colorMode": "value"
-      }
+      },
+      "description": "Busy CPU percent calculated from idle utilization. Values are per host."
     },
     {
       "id": 2,
@@ -138,15 +191,17 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "100 * system_memory_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\",state=\"used\"}",
-          "legendFormat": "",
+          "expr": "100 * max by (host_name) (system_memory_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\",state=\"used\"})",
+          "legendFormat": "{{host_name}}",
           "refId": "A",
           "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent"
+          "unit": "percent",
+          "min": 0,
+          "max": 100
         },
         "overrides": []
       },
@@ -159,9 +214,10 @@
           "values": false
         },
         "orientation": "auto",
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "colorMode": "value"
-      }
+      },
+      "description": "Memory used state as reported by OTel hostmetrics; not necessarily application memory pressure."
     },
     {
       "id": 3,
@@ -183,8 +239,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_cpu_load_average_1m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "",
+          "expr": "max by (host_name) (system_cpu_load_average_1m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}}",
           "refId": "A",
           "instant": true
         }
@@ -204,7 +260,7 @@
           "values": false
         },
         "orientation": "auto",
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "colorMode": "value"
       }
     },
@@ -228,8 +284,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_cpu_logical_count{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "",
+          "expr": "max by (host_name) (system_cpu_logical_count{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}}",
           "refId": "A",
           "instant": true
         }
@@ -249,7 +305,7 @@
           "values": false
         },
         "orientation": "auto",
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "colorMode": "value"
       }
     },
@@ -273,15 +329,17 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "100 * system_cpu_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "{{state}}",
+          "expr": "100 * max by (host_name,state) (system_cpu_utilization_ratio{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}} · {{state}}",
           "refId": "A",
           "instant": false
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent"
+          "unit": "percent",
+          "min": 0,
+          "max": 100
         },
         "overrides": []
       },
@@ -315,8 +373,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_memory_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "{{state}}",
+          "expr": "max by (host_name,state) (system_memory_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}} · {{state}}",
           "refId": "A",
           "instant": false
         }
@@ -357,8 +415,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "sum by (device,direction) (rate(system_disk_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}[$__rate_interval]))",
-          "legendFormat": "{{device}} {{direction}}",
+          "expr": "sum by (host_name,device,direction) (rate(system_disk_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\",device=~\"$device\"}[$__rate_interval]))",
+          "legendFormat": "{{host_name}} · {{device}} · {{direction}}",
           "refId": "A",
           "instant": false
         }
@@ -377,7 +435,8 @@
         "tooltip": {
           "mode": "multi"
         }
-      }
+      },
+      "description": "Disk I/O bytes per second by device and direction. Select physical devices to avoid partitions or zram."
     },
     {
       "id": 8,
@@ -399,8 +458,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "sum by (device,direction) (rate(system_disk_operations_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}[$__rate_interval]))",
-          "legendFormat": "{{device}} {{direction}}",
+          "expr": "sum by (host_name,device,direction) (rate(system_disk_operations_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\",device=~\"$device\"}[$__rate_interval]))",
+          "legendFormat": "{{host_name}} · {{device}} · {{direction}}",
           "refId": "A",
           "instant": false
         }
@@ -441,8 +500,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_filesystem_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "{{mountpoint}} {{state}}",
+          "expr": "max by (host_name,mountpoint,state) (system_filesystem_usage_bytes{deployment_environment_name=~\"$environment\",host_name=~\"$host\",mountpoint=~\"$mountpoint\"})",
+          "legendFormat": "{{host_name}} · {{mountpoint}} · {{state}}",
           "refId": "A",
           "instant": false
         }
@@ -461,7 +520,8 @@
         "tooltip": {
           "mode": "multi"
         }
-      }
+      },
+      "description": "Raw filesystem usage by state; choose a mount point to reduce visual clutter. Some mounts may represent the same underlying filesystem."
     },
     {
       "id": 10,
@@ -483,8 +543,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "sum by (device,direction) (rate(system_network_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}[$__rate_interval]))",
-          "legendFormat": "{{device}} {{direction}}",
+          "expr": "sum by (host_name,device,direction) (rate(system_network_io_bytes_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\",device!=\"lo\"}[$__rate_interval]))",
+          "legendFormat": "{{host_name}} · {{device}} · {{direction}}",
           "refId": "A",
           "instant": false
         }
@@ -503,7 +563,8 @@
         "tooltip": {
           "mode": "multi"
         }
-      }
+      },
+      "description": "Rate of received/transmitted bytes per second, excluding loopback (lo)."
     },
     {
       "id": 11,
@@ -525,8 +586,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "sum by (device,direction) (rate(system_network_errors_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}[$__rate_interval]))",
-          "legendFormat": "{{device}} {{direction}}",
+          "expr": "sum by (host_name,device,direction) (rate(system_network_errors_total{deployment_environment_name=~\"$environment\",host_name=~\"$host\",device!=\"lo\"}[$__rate_interval]))",
+          "legendFormat": "{{host_name}} · {{device}} · {{direction}}",
           "refId": "A",
           "instant": false
         }
@@ -567,8 +628,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_cpu_load_average_1m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "1m",
+          "expr": "max by (host_name) (system_cpu_load_average_1m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}} · 1m",
           "refId": "A",
           "instant": false
         },
@@ -577,8 +638,8 @@
             "type": "prometheus",
             "uid": "mimir"
           },
-          "expr": "system_cpu_load_average_5m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"}",
-          "legendFormat": "5m",
+          "expr": "max by (host_name) (system_cpu_load_average_5m{deployment_environment_name=~\"$environment\",host_name=~\"$host\"})",
+          "legendFormat": "{{host_name}} · 5m",
           "refId": "B",
           "instant": false
         }
@@ -599,5 +660,6 @@
         }
       }
     }
-  ]
+  ],
+  "description": "GitOps-provisioned Fedora host metrics from OpenTelemetry via Mimir. Multi-host aware, with disk and filesystem filters."
 }

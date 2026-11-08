@@ -1,7 +1,14 @@
-# Observability Lab — Kubernetes installer bundle
+# OTel Agent & Gateway Health dashboard
 
-Starter infrastructure automation for Fedora 45 single-node Kubernetes, based on the working Dell XPS home lab. Designed to be merged into `marellasunil/my-observability-lab` after review.
+Deploy from repository root after copying `observability/grafana/dashboards/collector-health/` into your repository:
 
-See `docs/installation.md` and `docs/firewall.md`.
+```bash
+kubectl apply -k observability/grafana/dashboards/collector-health
+```
 
-**Important:** The monitoring values and NodePort manifest are **not included** here; retain the tested versions already committed in your repository. This bundle is a proposed implementation, not yet tested on a clean machine.
+Uses Grafana Prometheus datasource UID `prometheus`. Existing Fedora host dashboard is unaffected. This package does not change Collector/Kubernetes deployments.
+
+The first ten monitoring panels use metrics explicitly observed in the supplied query output. Exporter panels use common names that must be verified in your environment; if they show No data, inspect `count by (__name__) ({__name__=~"otelcol_exporter_.*"})`. The topology is configured/documented, not automatically discovered.
+
+
+v1.1: Confirmed exporter metrics. Replaced unobserved send-failure metric with exporter queue utilization; added in-flight requests and Mimir remote-write batches/sec. Verify labels and scrape status in Prometheus. Missing failures cannot be interpreted as zero failures.

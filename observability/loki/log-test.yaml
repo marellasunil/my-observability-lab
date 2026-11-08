@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: loki-log-test
+  namespace: observability
+  labels:
+    app: loki-log-test
+spec:
+  containers:
+    - name: logger
+      image: busybox:1.36
+      command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            echo "$(date -u) INFO OpenTelemetry Loki lab test"
+            sleep 30
+          done
+      resources:
+        requests:
+          cpu: 5m
+          memory: 8Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi

@@ -1,0 +1,43 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiling-demo
+  namespace: observability
+  labels:
+    app: profiling-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profiling-demo
+  template:
+    metadata:
+      labels:
+        app: profiling-demo
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: profiling-demo
+          image: marellasunil/profiling-demo:0.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: otel-gateway.observability.svc.cluster.local:4317
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 192Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+

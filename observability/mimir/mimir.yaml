@@ -1,0 +1,62 @@
+# Single-process Mimir configuration for the home lab.
+# Not intended for production.
+multitenancy_enabled: false
+
+usage_stats:
+  enabled: false
+
+server:
+  http_listen_port: 9009
+  grpc_listen_port: 9095
+  log_level: info
+
+blocks_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/mimir/blocks
+  bucket_store:
+    sync_dir: /data/mimir/tsdb-sync
+  tsdb:
+    dir: /data/mimir/tsdb
+
+compactor:
+  data_dir: /data/mimir/compactor
+  sharding_ring:
+    kvstore:
+      store: memberlist
+
+distributor:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: memberlist
+
+ingester:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: memberlist
+    replication_factor: 1
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
+
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/mimir/rules
+
+alertmanager_storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/mimir/alertmanager
+
+alertmanager:
+  data_dir: /data/mimir/alertmanager-data
+
+ruler:
+  rule_path: /data/mimir/ruler-data
+
+limits:
+  compactor_blocks_retention_period: 72h

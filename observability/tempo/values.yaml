@@ -1,0 +1,50 @@
+
+# Grafana Tempo - Single Binary Lab Configuration
+
+replicas: 1
+
+tempo:
+  retention: 48h
+
+  reportingEnabled: false
+
+  metricsGenerator:
+    enabled: false
+
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+persistence:
+  enabled: true
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  additionalLabels:
+    release: prometheus-stack
+

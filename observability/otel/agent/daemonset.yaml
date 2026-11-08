@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-hostmetrics-agent
+  namespace: observability
+spec:
+  selector:
+    matchLabels:
+      app: otel-hostmetrics-agent
+  template:
+    metadata:
+      labels:
+        app: otel-hostmetrics-agent
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: fedora-worker
+
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+
+      containers:
+        - name: otel-agent
+          image: otel/opentelemetry-collector-contrib:0.164.0
+          args:
+            - --config=/etc/otelcol/config.yaml
+          ports:
+            - containerPort: 8888
+              name: self-metrics
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol
+              readOnly: true
+            - name: hostfs
+              mountPath: /hostfs
+              readOnly: true
+            - name: podlogs
+              mountPath: /var/log/pods
+              readOnly: true
+
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+
+      volumes:
+        - name: config
+          configMap:
+            name: otel-hostmetrics-agent-config
+
+        - name: hostfs
+          hostPath:
+            path: /
+            type: Directory
+        - name: podlogs
+          hostPath:
+            path: /var/log/pods
+            type: Directory

@@ -14,35 +14,39 @@ spec:
         app: otel-gateway
     spec:
       containers:
-        - name: otel-gateway
-          image: otel/opentelemetry-collector-contrib:0.164.0
-          args:
-            - --config=/etc/otelcol/config.yaml
-          ports:
-            - name: otlp-grpc
-              containerPort: 4317
-            - name: otlp-http
-              containerPort: 4318
-            - name: prometheus
-              containerPort: 8889
-            - containerPort: 8888
-              name: self-metrics
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: "1"
-              memory: 512Mi
-          volumeMounts:
-            - name: config
-              mountPath: /etc/otelcol
-              readOnly: true
-      volumes:
+      - name: otel-gateway
+        image: otel/opentelemetry-collector-contrib:0.164.0
+        args:
+        - --config=/etc/otelcol/config.yaml
+        ports:
+        - name: otlp-grpc
+          containerPort: 4317
+        - name: otlp-http
+          containerPort: 4318
+        - name: prometheus
+          containerPort: 8889
+        - containerPort: 8888
+          name: self-metrics
+          protocol: TCP
+        - name: demo-grpc
+          containerPort: 14317
+        - name: demo-http
+          containerPort: 14318
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: '1'
+            memory: 512Mi
+        volumeMounts:
         - name: config
-          configMap:
-            name: otel-gateway-config
+          mountPath: /etc/otelcol
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: otel-gateway-config
 ---
 apiVersion: v1
 kind: Service
@@ -56,19 +60,25 @@ spec:
   selector:
     app: otel-gateway
   ports:
-    - name: otlp-grpc
-      port: 4317
-      targetPort: otlp-grpc
-    - name: otlp-http
-      port: 4318
-      targetPort: otlp-http
-    - name: prometheus
-      port: 8889
-      targetPort: prometheus
-    - name: self-metrics
-      port: 8888
-      targetPort: self-metrics
-      protocol: TCP
+  - name: otlp-grpc
+    port: 4317
+    targetPort: otlp-grpc
+  - name: otlp-http
+    port: 4318
+    targetPort: otlp-http
+  - name: prometheus
+    port: 8889
+    targetPort: prometheus
+  - name: self-metrics
+    port: 8888
+    targetPort: self-metrics
+    protocol: TCP
+  - name: demo-grpc
+    port: 14317
+    targetPort: demo-grpc
+  - name: demo-http
+    port: 14318
+    targetPort: demo-http
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -83,11 +93,11 @@ spec:
       app: otel-gateway
   namespaceSelector:
     matchNames:
-      - observability
+    - observability
   endpoints:
-    - port: prometheus
-      path: /metrics
-      interval: 30s
-    - port: self-metrics
-      path: /metrics
-      interval: 30s
+  - port: prometheus
+    path: /metrics
+    interval: 30s
+  - port: self-metrics
+    path: /metrics
+    interval: 30s

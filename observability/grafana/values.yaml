@@ -1,26 +1,22 @@
 replicas: 1
-
 service:
   type: ClusterIP
   port: 80
-
 persistence:
   enabled: true
   type: pvc
   storageClassName: local-path
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   size: 5Gi
-
 sidecar:
   dashboards:
     enabled: true
     label: grafana_dashboard
-    labelValue: "1"
+    labelValue: '1'
     searchNamespace: observability
     provider:
       allowUiUpdates: false
-
 resources:
   requests:
     cpu: 100m
@@ -28,32 +24,61 @@ resources:
   limits:
     cpu: 500m
     memory: 768Mi
-
 grafana.ini:
-  server:
-    root_url: http://fedora-worker:30080/
+  server: {}
   users:
     allow_sign_up: false
   analytics:
     reporting_enabled: false
     check_for_updates: false
-
 datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
-      - name: Prometheus
-        uid: prometheus
-        type: prometheus
-        access: proxy
-        url: http://prometheus-stack-kube-prom-prometheus.observability.svc.cluster.local:9090
-        isDefault: true
-        editable: false
-
-      - name: Mimir
-        uid: mimir
-        type: prometheus
-        access: proxy
-        url: http://mimir.observability.svc.cluster.local:9009/prometheus
-        isDefault: false
-        editable: false
+    - access: proxy
+      editable: false
+      isDefault: true
+      name: Prometheus
+      type: prometheus
+      uid: prometheus
+      url: http://prometheus-stack-kube-prom-prometheus.observability.svc.cluster.local:9090
+    - access: proxy
+      editable: false
+      isDefault: false
+      name: Mimir
+      type: prometheus
+      uid: mimir
+      url: http://mimir.observability.svc.cluster.local:9009/prometheus
+    - access: proxy
+      editable: null
+      isDefault: false
+      jsonData:
+        derivedFields:
+        - datasourceUid: fg3ir1gbl59fkd
+          matcherRegex: '"trace_id"\s*:\s*"([a-fA-F0-9]{32})"'
+          matcherType: regex
+          name: TraceID
+          url: $${__value.raw}
+          urlDisplayLabel: View trace
+        pdcInjected: false
+      name: loki
+      type: loki
+      uid: eg3ihvyg6k5q8e
+      url: http://loki.observability.svc.cluster.local:3100
+    - access: proxy
+      editable: null
+      isDefault: false
+      jsonData:
+        pdcInjected: false
+        tracesToLogsV2:
+          customQuery: true
+          datasourceUid: eg3ihvyg6k5q8e
+          filterBySpanID: false
+          filterByTraceID: true
+          query: '{k8s_namespace_name="otel-demo"} | json | trace_id = "$${__trace.traceId}"'
+          spanEndTimeShift: 5m
+          spanStartTimeShift: -5m
+      name: tempo
+      type: tempo
+      uid: fg3ir1gbl59fkd
+      url: http://tempo.observability.svc.cluster.local:3200

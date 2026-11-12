@@ -10,6 +10,14 @@ Default target architecture: application SDKs → demo Collector → central OTe
 
 **Status:** documentation of the working lab and reference recipes. The Fedora lab and three-destination ingestion were exercised; Kind and single-node/multi-node portable installation recipes are not yet independently validated. Complete sanitized Helm values and automated installation remain pending. Cloud integrations are optional and may incur charges. Never commit credentials.
 
+## Executable foundation
+
+Copy `examples/lab-config.example.yaml` to `lab-config.yaml`, configure the cluster context and storage class, then run `bash scripts/lab-foundation.sh preflight lab-config.yaml`. For Kind creation, inventory and verification commands, see [executable foundation](docs/lab-foundation.md). The foundation script does not install the observability stack; use the separate core installer below.
+
+## Portable core installer
+
+See [portable installation](docs/portable-installation.md) for the new plan-first Helm orchestration script. Exact chart versions and reviewed values are required before applying. The core component switches are consumed by this installer; optional integrations and demo packaging remain pending.
+
 ## Existing dashboard package
 
 ### OTel Agent & Gateway Health dashboard

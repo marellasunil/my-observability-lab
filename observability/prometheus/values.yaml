@@ -1,19 +1,22 @@
 grafana:
   enabled: false
   forceDeployDashboards: true
-
+  sidecar:
+    dashboards:
+      annotations: {}
+      enabled: true
+      label: grafana_dashboard
+      labelValue: '1'
 sidecar:
   dashboards:
     enabled: true
     label: grafana_dashboard
-    labelValue: "1"
+    labelValue: '1'
     searchNamespace: observability
     provider:
       allowUiUpdates: false
-
 alertmanager:
   enabled: false
-
 prometheus:
   enabled: true
   prometheusSpec:
@@ -21,27 +24,23 @@ prometheus:
     retention: 7d
     scrapeInterval: 30s
     evaluationInterval: 30s
-
     resources:
       requests:
         cpu: 100m
         memory: 512Mi
       limits:
-        cpu: "2"
+        cpu: '2'
         memory: 2Gi
-
     storageSpec:
       volumeClaimTemplate:
         spec:
           storageClassName: local-path
           accessModes:
-            - ReadWriteOnce
+          - ReadWriteOnce
           resources:
             requests:
               storage: 10Gi
-
 kubeStateMetrics:
   enabled: true
-
 nodeExporter:
   enabled: true

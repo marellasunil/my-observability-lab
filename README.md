@@ -1,4 +1,18 @@
-# OTel Agent & Gateway Health dashboard
+# My Observability Lab
+
+A local-first Kubernetes observability reference lab using OpenTelemetry, Grafana OSS and optional cloud destinations. Learn application instrumentation, telemetry routing, Kubernetes monitoring and operational troubleshooting with Astronomy Shop.
+
+## Getting started
+
+Choose Kind, single-node kubeadm or multi-node kubeadm in the [reproduction guide](docs/lab-reproduction.md). Then follow [Astronomy Shop and cloud integrations](docs/astronomy-shop-cloud.md) and [operations and known limitations](docs/lab-operations.md).
+
+Default target architecture: application SDKs → demo Collector → central OTel gateway → Mimir, Loki and Tempo → Grafana. Prometheus monitors Kubernetes and Collector health. Optional Grafana Cloud and Splunk Observability Cloud exports, Pyroscope and FleetAMP management.
+
+**Status:** documentation of the working lab and reference recipes. The Fedora lab and three-destination ingestion were exercised; Kind and single-node/multi-node portable installation recipes are not yet independently validated. Complete sanitized Helm values and automated installation remain pending. Cloud integrations are optional and may incur charges. Never commit credentials.
+
+## Existing dashboard package
+
+### OTel Agent & Gateway Health dashboard
 
 Deploy from repository root after copying `observability/grafana/dashboards/collector-health/` into your repository:
 

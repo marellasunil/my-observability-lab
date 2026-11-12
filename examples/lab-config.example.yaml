@@ -1,0 +1,25 @@
+# Copy to lab-config.yaml; do not store credentials here.
+cluster:
+  type: existing
+  context: homelab-k8s
+  name: observability-lab
+storage:
+  className: local-path
+components:
+  prometheus: {enabled: true}
+  grafana: {enabled: true}
+  mimir: {enabled: true}
+  loki: {enabled: true}
+  tempo: {enabled: true}
+  pyroscope: {enabled: false}
+  otelGateway: {enabled: true}
+  astronomyShop: {enabled: true}
+  fleetamp: {enabled: false}
+  headlamp: {enabled: false}
+integrations:
+  grafanaCloud: {enabled: false}
+  splunkObservabilityCloud: {enabled: false}
+demo:
+  loadGenerator: {enabled: true, users: 1, autoStart: false}
+telemetry:
+  cloud: {traceSamplingPercentage: 10, minimumLogSeverity: WARN}

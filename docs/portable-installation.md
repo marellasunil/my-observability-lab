@@ -1,36 +1,19 @@
-# Portable core installer
+# Portable installation
 
-This is an initial Helm orchestration implementation, not a validated full-stack distribution. It deliberately refuses to install until exact chart versions and reviewed values files are provided. The example catalog is a proposed chart mapping, not an inventory of the running lab. In particular, Mimir distributed chart must be configured for appropriate lab resource usage, and the existing gateway may use raw manifests rather than Helm.
+The reference catalog pins the live Helm versions and uses Kustomize for Mimir and the gateway. The default profile installs the local stack and Astronomy Shop. Cloud integrations, FleetAMP and Headlamp are not automated yet.
 
-## Prepare
-
-From the repository root, install Python 3.9+, PyYAML, Bash, Helm and kubectl. Complete the [foundation guide](lab-foundation.md).
+Run from the repository root with Python 3.9+, PyYAML, Bash, kubectl and Helm. Follow [foundation setup](lab-foundation.md), then:
 
 ```sh
-cp examples/releases.example.yaml releases.yaml
 cp examples/lab-config.example.yaml lab-config.yaml
+cp examples/releases.example.yaml releases.yaml
+python3 scripts/install.py
 ```
 
-Edit cluster context and storage class in lab-config.yaml. Review each enabled core component in releases.yaml. Supply an exact chart version and a reviewed repository-relative values file. Disable the Grafana dependency in kube-prometheus-stack if deploying standalone Grafana. Configure storage classes, resource limits, retention, backend endpoints and Grafana data sources in the actual chart values; the installer does not translate the storage setting into chart-specific values. Use a local-only gateway config and verify it contains no cloud destinations. Never include credentials in values or commit raw live values.
+Set the exact context and storage class first. The installer rewrites explicit storageClass/storageClassName fields in temporary Helm values and the Mimir PVC; components without explicit settings use the cluster default. Use a default provisioner matching the selected class. Kind normally uses standard; kubeadm reference uses local-path. The plan renders Kustomize locally and prints commands; temporary paths are not reusable. No cluster mutation occurs in plan mode.
 
-## Plan and apply
+On a fresh disposable cluster, after review, run `python3 scripts/install.py --apply`. The installer checks dependencies, preflight, existing resources, renders Helm charts and installs in order. Existing resources require explicit --allow-upgrade; do not use it on the reference lab without reviewing changes. A failure leaves earlier releases installed. No automatic rollback. Prometheus is required for ServiceMonitor CRDs. Grafana and gateway require all local backends; demo requires gateway. Only the reference load settings (one user, manual start) are supported. Cloud switches are rejected. Disabled components are not uninstalled.
 
-```sh
-python3 scripts/install.py --config lab-config.yaml --releases releases.yaml
-```
+The demo uses the captured chart 0.42.6 values, dedicated gateway ports 14317/14318 and local-only exports. Grafana provisions four data sources. The Tempo-to-Loki query targets otel-demo and still requires verification against actual log labels and bodies. Pyroscope datasource, host agent, dashboards and NodePort can be installed separately; they are not automated by this script.
 
-The default mode prints the plan and performs no mutations. Missing versions or files cause a nonzero exit. Once the plan is complete and reviewed:
-
-```sh
-python3 scripts/install.py --config lab-config.yaml --releases releases.yaml --apply
-```
-
-Apply runs preflight, refuses existing release names unless --allow-upgrade is explicitly passed, adds Helm repositories, renders all selected charts, then installs sequentially with readiness waits. Helm template is not server-side validation. A failed install stops subsequent releases; earlier releases remain installed. Review helm status and history before retrying. No automatic deletion or rollback is performed. Use a fresh disposable cluster for initial testing; do not run against the working lab.
-
-Component switches are now consumed for the seven core Helm releases. Astronomy Shop, FleetAMP and Headlamp remain deferred and are reported, not installed. Cloud integration switches are rejected if enabled. Values files must themselves be local-only; the installer cannot guarantee their contents. It does not install a CNI or storage provisioner, generate credentials, configure chart-specific storage, or verify ingestion.
-
-## Reconcile with the reference lab
-
-When the administration laptop is available, run foundation inventory and inspect Helm release metadata. Retrieve actual values locally with restrictive file permissions; never commit raw values or rendered manifests. Compare each release and chart version with the catalog, replace proposed mappings as needed, and construct sanitized portable values. Check existing raw manifests separately. Test on Kind, then single-node and multi-node kubeadm. Document actual resource use and validate each signal end to end.
-
-The current installer has not been exercised against a live Kubernetes cluster. Exact portable values and complete demo packaging are still required before a one-command installation can be advertised.
+Validate actual metrics, logs and traces after installation. See [demo guide](astronomy-shop-cloud.md). This is a lab, not a production architecture. Clean-cluster end-to-end testing remains pending.

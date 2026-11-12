@@ -1,45 +1,58 @@
-# Ordered release catalog. Fill exact tested chart versions and values paths.
-# No release is installed until all enabled entries pass preflight.
 releases:
-  - component: prometheus
-    name: prometheus-stack
-    chart: prometheus-community/kube-prometheus-stack
-    repository: {name: prometheus-community, url: "https://prometheus-community.github.io/helm-charts"}
-    version: ""
-    values: observability/prometheus/values.yaml
-  - component: mimir
-    name: mimir
-    chart: grafana/mimir-distributed
-    repository: {name: grafana, url: "https://grafana.github.io/helm-charts"}
-    version: ""
-    values: observability/mimir/values.yaml
-  - component: loki
-    name: loki
-    chart: grafana/loki
-    repository: {name: grafana, url: "https://grafana.github.io/helm-charts"}
-    version: ""
-    values: observability/loki/values.yaml
-  - component: tempo
-    name: tempo
-    chart: grafana/tempo
-    repository: {name: grafana, url: "https://grafana.github.io/helm-charts"}
-    version: ""
-    values: observability/tempo/values.yaml
-  - component: grafana
+- component: prometheus
+  name: prometheus-stack
+  chart: prometheus-community/kube-prometheus-stack
+  repository:
+    name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  version: 92.21.2
+  values: observability/prometheus/values.yaml
+- component: mimir
+  name: mimir
+  kind: kustomize
+  path: observability/mimir
+- component: loki
+  name: loki
+  chart: grafana/loki
+  repository:
     name: grafana
-    chart: grafana/grafana
-    repository: {name: grafana, url: "https://grafana.github.io/helm-charts"}
-    version: ""
-    values: observability/grafana/values.yaml
-  - component: otelGateway
-    name: otel-gateway
-    chart: open-telemetry/opentelemetry-collector
-    repository: {name: open-telemetry, url: "https://open-telemetry.github.io/opentelemetry-helm-charts"}
-    version: ""
-    values: observability/otel-gateway/values.yaml
-  - component: pyroscope
-    name: pyroscope
-    chart: grafana/pyroscope
-    repository: {name: grafana, url: "https://grafana.github.io/helm-charts"}
-    version: ""
-    values: observability/pyroscope/values.yaml
+    url: https://grafana.github.io/helm-charts
+  version: 7.5.0
+  values: observability/loki/values.yaml
+- component: tempo
+  name: tempo
+  chart: grafana/tempo
+  repository:
+    name: grafana
+    url: https://grafana.github.io/helm-charts
+  version: 3.2.1
+  values: observability/tempo/values.yaml
+- component: grafana
+  name: grafana
+  chart: grafana-community/grafana
+  repository:
+    name: grafana-community
+    url: https://grafana-community.github.io/helm-charts
+  version: 14.4.0
+  values: observability/grafana/values.yaml
+- component: otelGateway
+  name: otel-gateway
+  kind: kustomize
+  path: observability/otel/gateway
+- component: pyroscope
+  name: pyroscope
+  chart: grafana/pyroscope
+  repository:
+    name: grafana
+    url: https://grafana.github.io/helm-charts
+  version: 2.4.3
+  values: observability/pyroscope/values.yaml
+- component: astronomyShop
+  name: otel-demo
+  chart: open-telemetry/opentelemetry-demo
+  repository:
+    name: open-telemetry
+    url: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.42.6
+  values: demos/astronomy-shop/values.yaml
+  namespace: otel-demo

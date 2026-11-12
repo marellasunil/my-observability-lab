@@ -26,6 +26,6 @@ bash scripts/lab-foundation.sh verify lab-config.yaml
 
 Inventory reports resource metadata, not credentials or raw configuration. Verification checks API/node readiness, storage class existence, gateway rollout and frontend rollout if the demo namespace exists. It does not verify all components, PVC provisioning, telemetry delivery or resource capacity. Inspect listed pods/PVCs and query each backend as described in [demo guide](astronomy-shop-cloud.md).
 
-Only cluster and storage fields are consumed by this initial script. Component toggles, cloud integration settings and load/sampling settings are reserved for the future installer; changing them currently does not deploy or reconfigure anything. No cloud export is enabled by these commands.
+Only cluster and storage fields are consumed by this initial script. Core component toggles are consumed by the separate [portable installer](portable-installation.md). Cloud integration and load/sampling settings remain reserved; the foundation script itself does not deploy or reconfigure anything. No cloud export is enabled by these commands.
 
 The scripts have not yet been run on a live cluster. Exact sanitized Helm values, install orchestration, dashboard packaging and clean-cluster tests remain pending. Do not use the lab as production infrastructure.

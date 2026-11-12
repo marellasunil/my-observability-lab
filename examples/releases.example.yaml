@@ -21,10 +21,10 @@ releases:
   values: observability/loki/values.yaml
 - component: tempo
   name: tempo
-  chart: grafana/tempo
+  chart: grafana-community/tempo
   repository:
-    name: grafana
-    url: https://grafana.github.io/helm-charts
+    name: grafana-community
+    url: https://grafana-community.github.io/helm-charts
   version: 3.2.1
   values: observability/tempo/values.yaml
 - component: grafana

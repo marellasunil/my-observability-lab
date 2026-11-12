@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fleetamp-lab-data
+  namespace: observability
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests: {storage: 2Gi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleetamp-lab
+  namespace: observability
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: fleetamp-lab}
+  template:
+    metadata:
+      labels: {app: fleetamp-lab}
+    spec:
+      containers:
+      - name: fleetamp
+        image: localhost/fleetamp:lab-v0.3.0-dev
+        imagePullPolicy: Never
+        ports:
+        - {name: http, containerPort: 8080}
+        - {name: opamp, containerPort: 4320}
+        env:
+        - {name: FLEETAMP_HTTP_ADDR, value: '0.0.0.0:8080'}
+        - {name: FLEETAMP_OPAMP_ADDR, value: '0.0.0.0:4320'}
+        - {name: FLEETAMP_DATA_DIR, value: /var/lib/fleetamp}
+        - {name: FLEETAMP_DATABASE_PATH, value: /var/lib/fleetamp/fleetamp.db}
+        - {name: FLEETAMP_SERVER_PEPPER_FILE, value: /run/fleetamp-secrets/server-pepper}
+        - {name: FLEETAMP_ALLOW_INSECURE, value: 'true'}
+        - name: FLEETAMP_OPAMP_TOKEN
+          valueFrom:
+            secretKeyRef: {name: fleetamp-lab-secrets, key: opamp-token}
+        readinessProbe:
+          httpGet: {path: /ready, port: http}
+          initialDelaySeconds: 3
+        livenessProbe:
+          httpGet: {path: /health, port: http}
+          initialDelaySeconds: 10
+        resources:
+          requests: {cpu: 100m, memory: 128Mi}
+          limits: {cpu: '1', memory: 512Mi}
+        volumeMounts:
+        - {name: data, mountPath: /var/lib/fleetamp}
+        - {name: credentials, mountPath: /run/fleetamp-secrets, readOnly: true}
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 10001
+          capabilities: {drop: [ALL]}
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: fleetamp-lab-data}
+      - name: credentials
+        secret: {secretName: fleetamp-lab-secrets, defaultMode: 288}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetamp-lab
+  namespace: observability
+spec:
+  type: ClusterIP
+  selector: {app: fleetamp-lab}
+  ports:
+  - {name: http, port: 8080, targetPort: http}
+  - {name: opamp, port: 4320, targetPort: opamp}

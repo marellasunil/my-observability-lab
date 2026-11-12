@@ -20,3 +20,7 @@ data/
 *.db
 *.sqlite
 *.log
+
+__pycache__/
+/lab-config.yaml
+/releases.yaml

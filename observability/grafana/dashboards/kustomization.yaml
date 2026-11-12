@@ -2,10 +2,20 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: observability
 configMapGenerator:
-  - name: grafana-dashboard-fedora-host
-    files:
-      - fedora-host-dashboard.json
-    options:
-      disableNameSuffixHash: true
-      labels:
-        grafana_dashboard: "1"
+- name: grafana-dashboard-fedora-host
+  files:
+  - fedora-host-dashboard.json
+  options:
+    disableNameSuffixHash: true
+    labels:
+      grafana_dashboard: '1'
+- name: grafana-dashboard-application-k8s-health
+  files:
+  - application-k8s-health.json
+  options:
+    disableNameSuffixHash: true
+    labels:
+      grafana_dashboard: '1'
+resources:
+- collector-health
+- telemetry-flow
